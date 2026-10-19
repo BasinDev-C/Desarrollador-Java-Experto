@@ -1,25 +1,21 @@
-# MEMORY.md — Memoria Técnica del Proyecto Backend en Java
+# MEMORY.md — Memoria Técnica de GestionSEMU Versión 1.1
 
 ## Stack Tecnológico y Ecosistema
 - **Lenguaje**: Java 17 / Java 21 (LTS)
-- **Framework**: Spring Boot 3.x
-- **Persistencia**: Spring Data JPA, Hibernate, Flyway / Liquibase (Migraciones de Base de Datos)
-- **Bases de Datos**: PostgreSQL (Relacional principal), Redis (Caché y gestión de sesiones)
-- **Herramienta de Construcción**: Maven / Gradle (Kotlin DSL)
-- **Pruebas**: JUnit 5, Mockito, Testcontainers, RestAssured
-- **Contenedores y CI/CD**: Docker, Docker Compose, GitHub Actions
+- **Interfaz Gráfica**: Java Swing (Componentes personalizados, tablas, formularios de despacho)
+- **Persistencia y Base de Datos**: JDBC, Patrón DAO (`IncidenteDAO`, `MovilDAO`, `PacienteDAO`, `PersonalDAO`), MySQL (`gestion_semu`).
+- **Herramienta de Construcción**: Maven (Compilación, ejecución con `mvn exec:java`) y scripts batch (`compilar.bat`, `ejecutar.bat`).
+- **Pruebas**: JUnit 5 (`IncidenteModelTest`).
 
-## Pautas Arquitectónicas
-- **Arquitectura en Capas**: Controlador -> Servicio -> Repositorio -> Base de Datos.
-- **Patrón DTO**: Nunca expongas entidades de base de datos directamente a la capa de API; utiliza siempre DTOs de Solicitud/Respuesta y MapStruct para el mapeo.
-- **Manejo de Excepciones**: Manejador global de excepciones (`@RestControllerAdvice`) que retorne detalles de problemas estandarizados (RFC 7807).
-- **Buenas Prácticas en Base de Datos**: Evita el problema de consultas N+1 (utiliza `@EntityGraph`, `JOIN FETCH` o carga por lotes), y asegura índices adecuados en claves foráneas y columnas de búsqueda frecuente.
+## Módulos y Arquitectura Principal
+- **Gestión de Incidentes (`FrmIncidente` / `IncidenteDAO`)**:
+  - Registro y actualización de servicios de emergencia.
+  - Manejo robusto de fechas y horas almacenadas en columnas `VARCHAR(20)` de MySQL (actualizadas mediante `ps.setString` para evitar truncamientos o errores de formato con `Timestamp`).
+  - Funciones de normalización de formatos de hora (`HH:mm`, `HH:mm:ss`, puntos `.`, un dígito como `9:30`).
+- **Gestión de Móviles y Tripulación (`FrmMovil` / `Movil` / `MovilDAO`)**:
+  - Asignación de tripulación de emergencia (Médico, Enfermero, Chofer).
+  - Control de estados de ambulancias y móviles (`DISPONIBLE`, `EN_INCIDENTE`, etc.).
 
-## Estado Actual del Proyecto
-- [ ] Inicialización de la arquitectura backend empresarial.
-- [ ] Configuración de pools de conexiones a base de datos y scripts de migración.
-- [ ] Implementación de modelos de dominio y capas de seguridad.
-
-## Decisiones Clave
-- **Java 17/21 LTS**: Seleccionado por su soporte a largo plazo, mejoras de rendimiento y construcciones modernas del lenguaje (Records).
-- **Flyway**: Elegido para el control de versiones y migraciones automatizadas del esquema de base de datos.
+## Decisiones Clave y Correcciones Realizadas
+- **Horarios en VARCHAR(20)**: Se corrigió el DAO de Incidentes para utilizar `ps.setString` en lugar de `ps.setTimestamp` al guardar horas, ya que la base de datos almacena los tiempos como cadenas (`VARCHAR`), garantizando que las actualizaciones persistan correctamente.
+- **Control de Versiones**: Repositorio Git en `https://github.com/BasinDev-C/GestionSEMU.git` (rama `main`), con sincronización automática tras cada cambio exitoso.
